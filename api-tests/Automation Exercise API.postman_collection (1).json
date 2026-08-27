@@ -1,0 +1,266 @@
+{
+  "info": {
+    "_postman_id": "cf610a0e-17e9-4ec1-961f-7dcc16eb60c7",
+    "name": "Automation Exercise API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29322721",
+    "_collection_link": "https://go.postman.co/collection/29322721-cf610a0e-17e9-4ec1-961f-7dcc16eb60c7?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Get Products List",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "   pm.test(\"Status code is 200\", function () {\r",
+              "     pm.response.to.have.status(200);\r",
+              "   });\r",
+              "\r",
+              "   pm.test(\"Response has products array\", function () {\r",
+              "     const jsonData = pm.response.json();\r",
+              "     pm.expect(jsonData).to.have.property('products');\r",
+              "     pm.expect(jsonData.products).to.be.an('array');\r",
+              "   });"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/productsList",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "productsList"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Product - Missing Param",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "   pm.test(\"Response indicates bad request via responseCode\", function () {\r",
+              "     const jsonData = pm.response.json();\r",
+              "     pm.expect(jsonData.responseCode).to.eql(400);\r",
+              "   });\r",
+              "\r",
+              "   pm.test(\"Error message mentions missing parameter\", function () {\r",
+              "     const jsonData = pm.response.json();\r",
+              "     pm.expect(jsonData.message).to.include(\"missing\");\r",
+              "   });"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/searchProduct",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "searchProduct"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Search Product - Valid",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "   pm.test(\"Search returns success responseCode\", function () {\r",
+              "     const jsonData = pm.response.json();\r",
+              "     pm.expect(jsonData.responseCode).to.eql(200);\r",
+              "   });\r",
+              "\r",
+              "   pm.test(\"Products array is returned\", function () {\r",
+              "     const jsonData = pm.response.json();\r",
+              "     pm.expect(jsonData.products).to.be.an('array');\r",
+              "   });"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "search_product",
+              "value": "top",
+              "type": "text",
+              "uuid": "6fde6638-4675-4c51-923e-a3c7e100ec5d"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/searchProduct",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "searchProduct"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify Login - Valid",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "   pm.test(\"Login verified successfully\", function () {\r",
+              "     const jsonData = pm.response.json();\r",
+              "     pm.expect(jsonData.responseCode).to.eql(200);\r",
+              "   });"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "email",
+              "value": "sayedasif.qatest@mailinator.com",
+              "type": "text",
+              "uuid": "783d434d-84f3-46e8-8693-85e32c50a123"
+            },
+            {
+              "key": "password",
+              "value": "123456",
+              "type": "text",
+              "uuid": "3d78d217-fd40-426c-bf2d-65c288f9d914"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/verifyLogin",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "verifyLogin"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Verify Login - Invalid",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "   pm.test(\"Invalid login is rejected\", function () {\r",
+              "     const jsonData = pm.response.json();\r",
+              "     pm.expect(jsonData.responseCode).to.eql(404);\r",
+              "   });"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "email",
+              "value": "sayedasif.qatest@mailinator.com",
+              "type": "text",
+              "uuid": "6d09c5ae-62e7-4cb3-a719-657c08aeee77"
+            },
+            {
+              "key": "password",
+              "value": "1234566",
+              "type": "text",
+              "uuid": "d0b06663-14ff-4f49-af9b-2a05d7a64e82"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/verifyLogin",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "verifyLogin"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    }
+  ]
+}
