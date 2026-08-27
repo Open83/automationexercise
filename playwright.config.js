@@ -1,8 +1,10 @@
+import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
   timeout: 60000,
+   globalSetup: './tests/global-setup.js', 
   fullyParallel: true,
   retries: 1,
   reporter: [['html', { open: 'never' }], ['list']],

@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 import { LoginPage } from '../pages/LoginPage.js';
 import { AccountPage } from '../pages/AccountPage.js';
+import fs from 'fs';  
 
 export default async () => {
   const browser = await chromium.launch();
@@ -53,7 +54,7 @@ export default async () => {
         // Save diagnostics and fail with a helpful message
         await page.screenshot({ path: 'auth-failure.png', fullPage: true });
         const html = await page.content();
-        const fs = require('fs');
+        
         fs.writeFileSync('auth-failure.html', html);
         await browser.close();
         throw new Error('Signup/login attempt failed. Saved auth-failure.png and auth-failure.html for inspection.');
@@ -61,7 +62,7 @@ export default async () => {
     } else {
       await page.screenshot({ path: 'auth-failure.png', fullPage: true });
       const html = await page.content();
-      const fs = require('fs');
+      
       fs.writeFileSync('auth-failure.html', html);
       await browser.close();
       throw new Error('Login did not succeed and signup was not attempted. Saved auth-failure.png and auth-failure.html for inspection.');
