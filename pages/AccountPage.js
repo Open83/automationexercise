@@ -19,7 +19,7 @@ export class AccountPage {
     this.accountCreatedHeading = page.locator('[data-qa="account-created"]');
     this.continueButton = page.locator('[data-qa="continue-button"]');
     this.deleteAccountLink = page.locator('a[href="/delete_account"]');
-    this.accountDeletedHeading = page.locator('[data-qa="account-deleted"]');
+    this.accountDeletedHeading = page.locator('[data-qa="account-deleted"], h2:has-text("Account Deleted!")');
   }
 
   async fillAccountDetails(details) {
@@ -39,6 +39,9 @@ export class AccountPage {
   }
 
   async deleteAccount() {
-    await this.deleteAccountLink.click();
+    await Promise.all([
+      this.page.waitForURL(/.*delete_account.*/, { timeout: 20000 }).catch(() => {}),
+      this.deleteAccountLink.click(),
+    ]);
   }
 }

@@ -18,7 +18,7 @@ export class ProductsPage {
         if (await addInCard.count()) {
           await product.hover();
           await Promise.all([
-            this.page.waitForResponse(response => response.url().includes('/add_to_cart/'), { timeout: 10000 }),
+            this.page.waitForResponse(response => response.url().includes('/add_to_cart'), { timeout: 10000 }),
             addInCard.click({ force: true }),
           ]);
         } else {
@@ -35,7 +35,7 @@ export class ProductsPage {
         const add = this.page.getByText('Add to cart', { exact: true }).first();
         if (this.page.url().includes('/product_details/') && await add.count()) {
           await Promise.all([
-            this.page.waitForResponse(response => response.url().includes('/add_to_cart/'), { timeout: 10000 }),
+            this.page.waitForResponse(response => response.url().includes('/add_to_cart'), { timeout: 10000 }),
             add.click({ force: true }),
           ]);
         }
