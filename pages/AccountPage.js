@@ -4,7 +4,7 @@ export class AccountPage {
 
     this.password = page.locator('#password');
     this.days = page.locator('#days');
-    this.months = page.locator('#months');.
+      this.months = page.locator('#months');
     this.years = page.locator('#years');
     this.firstName = page.locator('#first_name');
     this.lastName = page.locator('#last_name');
