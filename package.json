@@ -5,8 +5,13 @@
   "scripts": {
     "test": "playwright test",
     "test:api": "playwright test tests/api",
+    "test:ui": "playwright test tests/login.spec.js tests/cart.spec.js tests/checkout.spec.js",
     "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
+    "test:ui:headed": "playwright test tests/login.spec.js tests/cart.spec.js tests/checkout.spec.js --headed",
+    "test:ui:debug": "playwright test tests/login.spec.js tests/cart.spec.js tests/checkout.spec.js --debug",
+    "test:ui:report": "playwright show-report",
+    "test:api:report": "playwright show-report",
+    "test:all": "playwright test",
     "report": "playwright show-report"
   },
   "devDependencies": {

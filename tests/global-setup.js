@@ -5,6 +5,20 @@ import fs from 'fs';
 
 export default async () => {
 
+  // ==================================================
+  // SKIP UI GLOBAL SETUP FOR API TESTS
+  // ==================================================
+
+  if (process.env.SKIP_GLOBAL_SETUP === 'true') {
+    console.log('Skipping UI global setup for API tests.');
+    return;
+  }
+
+
+  // ==================================================
+  // START BROWSER
+  // ==================================================
+
   const browser = await chromium.launch();
 
   const context = await browser.newContext();
@@ -19,6 +33,7 @@ export default async () => {
   // ==================================================
 
   const email = process.env.EXISTING_TEST_EMAIL;
+
   const password = process.env.EXISTING_TEST_PASSWORD;
 
   const baseUrl =
@@ -63,8 +78,8 @@ export default async () => {
     );
 
 
-    // Sometimes Automation Exercise responds slowly,
-    // but the page is already usable.
+    // Automation Exercise can occasionally respond slowly.
+    // If the login page did not load, try again using commit.
 
     if (!page.url().includes('/login')) {
 
@@ -81,7 +96,6 @@ export default async () => {
   // ==================================================
 
   console.log('Attempting login...');
-
 
   await loginPage.login(
     email,
@@ -130,15 +144,12 @@ export default async () => {
         fullPage: true
       });
 
-
       fs.writeFileSync(
         'auth-failure.html',
         await page.content()
       );
 
-
       await browser.close();
-
 
       throw new Error(
         'Login did not succeed and no login error was displayed. ' +
@@ -246,7 +257,6 @@ export default async () => {
         }
       );
 
-
       console.log(
         'Account created and logged in successfully.'
       );
@@ -258,15 +268,12 @@ export default async () => {
         fullPage: true
       });
 
-
       fs.writeFileSync(
         'auth-failure.html',
         await page.content()
       );
 
-
       await browser.close();
-
 
       throw new Error(
         'Signup/login attempt failed. ' +
@@ -284,11 +291,9 @@ export default async () => {
     'Saving authenticated storage state...'
   );
 
-
   await context.storageState({
     path: 'storageState.json'
   });
-
 
   console.log(
     'storageState.json created successfully.'

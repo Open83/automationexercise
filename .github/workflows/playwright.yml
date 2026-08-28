@@ -1,4 +1,4 @@
-name: Playwright API Tests
+name: Playwright Test Suite
 
 on:
   push:
@@ -11,8 +11,16 @@ on:
       - main
       - master
 
+
 jobs:
+
+  # ==================================================
+  # API TESTS
+  # ==================================================
+
   api-tests:
+
+    name: API Tests
 
     timeout-minutes: 15
 
@@ -20,17 +28,17 @@ jobs:
 
     steps:
 
-      # ==========================================
-      # CHECKOUT REPOSITORY
-      # ==========================================
+      # ------------------------------------------
+      # CHECKOUT
+      # ------------------------------------------
 
       - name: Checkout repository
         uses: actions/checkout@v4
 
 
-      # ==========================================
-      # SETUP NODE.JS
-      # ==========================================
+      # ------------------------------------------
+      # NODE.JS
+      # ------------------------------------------
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,25 +47,25 @@ jobs:
           cache: npm
 
 
-      # ==========================================
-      # INSTALL PROJECT DEPENDENCIES
-      # ==========================================
+      # ------------------------------------------
+      # DEPENDENCIES
+      # ------------------------------------------
 
       - name: Install dependencies
         run: npm ci
 
 
-      # ==========================================
-      # INSTALL PLAYWRIGHT BROWSERS
-      # ==========================================
+      # ------------------------------------------
+      # PLAYWRIGHT
+      # ------------------------------------------
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
 
-      # ==========================================
-      # RUN API TESTS
-      # ==========================================
+      # ------------------------------------------
+      # API TESTS
+      # ------------------------------------------
 
       - name: Run API tests
         run: npm run test:api
@@ -65,22 +73,112 @@ jobs:
           API_BASE_URL: https://automationexercise.com/api
           BASE_URL: https://automationexercise.com
 
-          # GitHub repository secrets
           EXISTING_TEST_EMAIL: ${{ secrets.USERNAME }}
           EXISTING_TEST_PASSWORD: ${{ secrets.PASSWORD }}
 
-          # Skip UI global setup for API tests
           SKIP_GLOBAL_SETUP: true
 
 
-      # ==========================================
-      # UPLOAD PLAYWRIGHT REPORT
-      # ==========================================
+      # ------------------------------------------
+      # API REPORT
+      # ------------------------------------------
 
-      - name: Upload Playwright report
+      - name: Upload API Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-api-report
           path: playwright-report/
           retention-days: 14
+
+
+  # ==================================================
+  # UI TESTS
+  # ==================================================
+
+  ui-tests:
+
+    name: UI Tests
+
+    timeout-minutes: 20
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ------------------------------------------
+      # CHECKOUT
+      # ------------------------------------------
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # ------------------------------------------
+      # NODE.JS
+      # ------------------------------------------
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+
+      # ------------------------------------------
+      # DEPENDENCIES
+      # ------------------------------------------
+
+      - name: Install dependencies
+        run: npm ci
+
+
+      # ------------------------------------------
+      # PLAYWRIGHT
+      # ------------------------------------------
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+
+      # ------------------------------------------
+      # UI TESTS
+      # ------------------------------------------
+
+      - name: Run UI tests
+        run: npm run test:ui
+        env:
+          BASE_URL: https://automationexercise.com
+
+          EXISTING_TEST_EMAIL: ${{ secrets.USERNAME }}
+          EXISTING_TEST_PASSWORD: ${{ secrets.PASSWORD }}
+
+
+      # ------------------------------------------
+      # UI REPORT
+      # ------------------------------------------
+
+      - name: Upload UI Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-ui-report
+          path: playwright-report/
+          retention-days: 14
+
+
+      # ------------------------------------------
+      # AUTH DIAGNOSTICS
+      # ------------------------------------------
+
+      - name: Upload authentication diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authentication-diagnostics
+          path: |
+            auth-failure.png
+            auth-failure.html
+            storageState.json
+          if-no-files-found: ignore
+          retention-days: 7
