@@ -6,303 +6,290 @@ import fs from 'fs';
 export default async () => {
 
   // ==================================================
-  // SKIP UI GLOBAL SETUP FOR API TESTS
+  // CONFIGURATION
   // ==================================================
 
-  if (process.env.SKIP_GLOBAL_SETUP === 'true') {
-    console.log('Skipping UI global setup for API tests.');
-    return;
-  }
-
-
-  // ==================================================
-  // START BROWSER
-  // ==================================================
-
-  const browser = await chromium.launch();
-
-  const context = await browser.newContext();
-
-  const page = await context.newPage();
-
-  const loginPage = new LoginPage(page);
-
-
-  // ==================================================
-  // ENVIRONMENT VARIABLES
-  // ==================================================
-
-  const email = process.env.EXISTING_TEST_EMAIL;
-
-  const password = process.env.EXISTING_TEST_PASSWORD;
-
-  const baseUrl =
+  const baseURL =
     process.env.BASE_URL ||
     'https://automationexercise.com';
 
+  const email =
+    process.env.EXISTING_TEST_EMAIL;
+
+  const password =
+    process.env.EXISTING_TEST_PASSWORD;
+
+  const name =
+    process.env.EXISTING_TEST_NAME ||
+    'QA Test User';
+
+  const maxAttempts = 3;
+
+
+  // ==================================================
+  // VALIDATE CREDENTIALS
+  // ==================================================
 
   if (!email || !password) {
-
-    await browser.close();
-
     throw new Error(
-      'EXISTING_TEST_EMAIL and EXISTING_TEST_PASSWORD must be set.'
+      'Environment variables EXISTING_TEST_EMAIL and EXISTING_TEST_PASSWORD must be set.'
     );
   }
 
 
   // ==================================================
-  // OPEN LOGIN PAGE
+  // LOGIN WITH RETRIES
   // ==================================================
 
-  const loginUrl = `${baseUrl}/login`;
+  let lastError = null;
 
-  console.log(`Opening login page: ${loginUrl}`);
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
 
-
-  try {
-
-    await page.goto(loginUrl, {
-      waitUntil: 'domcontentloaded',
-      timeout: 60000
-    });
-
-  } catch (error) {
-
-    console.log(
-      'Initial navigation timed out. Checking whether the page loaded...'
-    );
-
-    console.log(
-      `Current URL: ${page.url()}`
-    );
-
-
-    // Automation Exercise can occasionally respond slowly.
-    // If the login page did not load, try again using commit.
-
-    if (!page.url().includes('/login')) {
-
-      await page.goto(loginUrl, {
-        waitUntil: 'commit',
-        timeout: 60000
-      });
-    }
-  }
-
-
-  // ==================================================
-  // LOGIN
-  // ==================================================
-
-  console.log('Attempting login...');
-
-  await loginPage.login(
-    email,
-    password
-  );
-
-
-  // ==================================================
-  // VERIFY LOGIN
-  // ==================================================
-
-  try {
-
-    await page.waitForSelector(
-      'text=Logged in as',
-      {
-        timeout: 15000
-      }
-    );
-
-    console.log(
-      'Existing account login successful.'
-    );
-
-  } catch (loginError) {
-
-    console.log(
-      'Existing login was not successful.'
-    );
-
-
-    // ==================================================
-    // CHECK LOGIN ERROR
-    // ==================================================
-
-    const loginErrorVisible =
-      await loginPage.loginError
-        .isVisible()
-        .catch(() => false);
-
-
-    if (!loginErrorVisible) {
-
-      await page.screenshot({
-        path: 'auth-failure.png',
-        fullPage: true
-      });
-
-      fs.writeFileSync(
-        'auth-failure.html',
-        await page.content()
-      );
-
-      await browser.close();
-
-      throw new Error(
-        'Login did not succeed and no login error was displayed. ' +
-        'Saved auth-failure.png and auth-failure.html.'
-      );
-    }
-
-
-    // ==================================================
-    // ATTEMPT ACCOUNT CREATION
-    // ==================================================
-
-    console.log(
-      'Login credentials were rejected. Attempting signup...'
-    );
-
-
-    const accountPage = new AccountPage(page);
-
-    const name =
-      process.env.EXISTING_TEST_NAME ||
-      'QA Test User';
-
+    let browser = null;
 
     try {
 
-      // ------------------------------------------
-      // START SIGNUP
-      // ------------------------------------------
-
-      await loginPage.startSignup(
-        name,
-        email
-      );
-
-
-      // ------------------------------------------
-      // ACCOUNT INFORMATION PAGE
-      // ------------------------------------------
-
-      await page.waitForSelector(
-        'h2:has-text("Enter Account Information")',
-        {
-          timeout: 15000
-        }
-      );
-
-
-      // ------------------------------------------
-      // ACCOUNT DETAILS
-      // ------------------------------------------
-
-      const details = {
-
-        password,
-
-        day: '10',
-
-        month: '5',
-
-        year: '1995',
-
-        firstName: 'QA',
-
-        lastName: 'Tester',
-
-        address: '123 Test Street',
-
-        country: 'United States',
-
-        state: 'California',
-
-        city: 'Los Angeles',
-
-        zipcode: '90001',
-
-        mobile: '9999999999'
-      };
-
-
-      // ------------------------------------------
-      // FILL ACCOUNT
-      // ------------------------------------------
-
-      await accountPage.fillAccountDetails(
-        details
-      );
-
-
-      // ------------------------------------------
-      // CREATE ACCOUNT
-      // ------------------------------------------
-
-      await accountPage.continueButton.click();
-
-
-      // ------------------------------------------
-      // VERIFY ACCOUNT LOGIN
-      // ------------------------------------------
-
-      await page.waitForSelector(
-        'text=Logged in as',
-        {
-          timeout: 15000
-        }
+      console.log(
+        `\n==========================================`
       );
 
       console.log(
-        'Account created and logged in successfully.'
+        `Authentication attempt ${attempt}/${maxAttempts}`
       );
 
-    } catch (signupError) {
+      console.log(
+        `==========================================`
+      );
 
-      await page.screenshot({
-        path: 'auth-failure.png',
-        fullPage: true
+
+      // ------------------------------------------
+      // Launch browser
+      // ------------------------------------------
+
+      browser = await chromium.launch({
+        headless: true
       });
 
-      fs.writeFileSync(
-        'auth-failure.html',
-        await page.content()
+
+      // ------------------------------------------
+      // Create fresh context
+      // ------------------------------------------
+
+      const context = await browser.newContext({
+        viewport: {
+          width: 1280,
+          height: 720
+        }
+      });
+
+
+      const page = await context.newPage();
+
+
+      // ------------------------------------------
+      // Create LoginPage
+      // ------------------------------------------
+
+      const loginPage = new LoginPage(page);
+
+
+      // ------------------------------------------
+      // Open login page
+      // ------------------------------------------
+
+      console.log(
+        `Opening login page: ${baseURL}/login`
       );
+
+      await page.goto(
+        `${baseURL}/login`,
+        {
+          waitUntil: 'domcontentloaded',
+          timeout: 30000
+        }
+      );
+
+
+      // ------------------------------------------
+      // Wait for login form
+      // ------------------------------------------
+
+      console.log(
+        'Waiting for login form...'
+      );
+
+      await loginPage.loginEmailInput.waitFor({
+        state: 'visible',
+        timeout: 15000
+      });
+
+
+      await loginPage.loginPasswordInput.waitFor({
+        state: 'visible',
+        timeout: 15000
+      });
+
+
+      // ------------------------------------------
+      // Login
+      // ------------------------------------------
+
+      console.log(
+        'Attempting login...'
+      );
+
+      await loginPage.login(
+        email,
+        password
+      );
+
+
+      // ------------------------------------------
+      // Verify successful login
+      // ------------------------------------------
+
+      await page.getByText(
+        'Logged in as',
+        {
+          exact: false
+        }
+      ).waitFor({
+        state: 'visible',
+        timeout: 15000
+      });
+
+
+      console.log(
+        'Existing account login successful.'
+      );
+
+
+      // ------------------------------------------
+      // Save storage state
+      // ------------------------------------------
+
+      console.log(
+        'Saving authenticated storage state...'
+      );
+
+      await context.storageState({
+        path: 'storageState.json'
+      });
+
+
+      console.log(
+        'storageState.json created successfully.'
+      );
+
+
+      // ------------------------------------------
+      // Close browser
+      // ------------------------------------------
 
       await browser.close();
 
-      throw new Error(
-        'Signup/login attempt failed. ' +
-        'Saved auth-failure.png and auth-failure.html for inspection.'
+
+      console.log(
+        'Authentication setup completed successfully.'
       );
+
+
+      return;
+
+    } catch (error) {
+
+      lastError = error;
+
+      console.error(
+        `Authentication attempt ${attempt} failed.`
+      );
+
+      console.error(
+        error.message
+      );
+
+
+      // ------------------------------------------
+      // Save diagnostics
+      // ------------------------------------------
+
+      try {
+
+        if (browser) {
+
+          const pages =
+            browser.contexts()
+              .flatMap(context => context.pages());
+
+          const page =
+            pages[0];
+
+          if (page) {
+
+            await page.screenshot({
+              path:
+                `auth-failure-attempt-${attempt}.png`,
+              fullPage: true
+            });
+
+            const html =
+              await page.content();
+
+            fs.writeFileSync(
+              `auth-failure-attempt-${attempt}.html`,
+              html
+            );
+          }
+        }
+
+      } catch (diagnosticError) {
+
+        console.error(
+          'Could not save authentication diagnostics:',
+          diagnosticError.message
+        );
+      }
+
+
+      // ------------------------------------------
+      // Close browser
+      // ------------------------------------------
+
+      try {
+
+        if (browser) {
+          await browser.close();
+        }
+
+      } catch (closeError) {
+        // Ignore browser close errors.
+      }
+
+
+      // ------------------------------------------
+      // Wait before retry
+      // ------------------------------------------
+
+      if (attempt < maxAttempts) {
+
+        console.log(
+          'Waiting 5 seconds before retry...'
+        );
+
+        await new Promise(
+          resolve => setTimeout(resolve, 5000)
+        );
+      }
     }
   }
 
 
   // ==================================================
-  // SAVE AUTHENTICATED STORAGE STATE
+  // ALL ATTEMPTS FAILED
   // ==================================================
 
-  console.log(
-    'Saving authenticated storage state...'
+  throw new Error(
+    `Authentication setup failed after ${maxAttempts} attempts. ` +
+    `Last error: ${lastError?.message || 'Unknown error'}`
   );
-
-  await context.storageState({
-    path: 'storageState.json'
-  });
-
-  console.log(
-    'storageState.json created successfully.'
-  );
-
-
-  // ==================================================
-  // CLOSE BROWSER
-  // ==================================================
-
-  await browser.close();
 };
