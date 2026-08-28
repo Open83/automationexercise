@@ -65,6 +65,10 @@ jobs:
           API_BASE_URL: https://automationexercise.com/api
           BASE_URL: https://automationexercise.com
 
+          # GitHub repository secrets
+          EXISTING_TEST_EMAIL: ${{ secrets.USERNAME }}
+          EXISTING_TEST_PASSWORD: ${{ secrets.PASSWORD }}
+
 
       # ==========================================
       # UPLOAD PLAYWRIGHT REPORT
