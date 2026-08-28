@@ -4,6 +4,7 @@
   "description": "Playwright automation suite for automationexercise.com built as a QA portfolio project",
   "scripts": {
     "test": "playwright test",
+    "test:api": "playwright test tests/api",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "report": "playwright show-report"

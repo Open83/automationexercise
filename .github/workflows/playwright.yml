@@ -1,38 +1,79 @@
-name: Playwright Tests
+name: Playwright API Tests
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - master
+
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - master
 
 jobs:
-  test:
-    timeout-minutes: 30
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  api-tests:
 
-      - uses: actions/setup-node@v4
+    timeout-minutes: 15
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # ==========================================
+      # CHECKOUT REPOSITORY
+      # ==========================================
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+      # ==========================================
+      # SETUP NODE.JS
+      # ==========================================
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+
+      # ==========================================
+      # INSTALL PROJECT DEPENDENCIES
+      # ==========================================
 
       - name: Install dependencies
         run: npm ci
 
+
+      # ==========================================
+      # INSTALL PLAYWRIGHT BROWSERS
+      # ==========================================
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run Playwright tests
-        run: npx playwright test
-        env:
-          EXISTING_TEST_EMAIL: ${{ secrets.EXISTING_TEST_EMAIL }}
-          EXISTING_TEST_PASSWORD: ${{ secrets.EXISTING_TEST_PASSWORD }}
 
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v4
+      # ==========================================
+      # RUN API TESTS
+      # ==========================================
+
+      - name: Run API tests
+        run: npm run test:api
+        env:
+          API_BASE_URL: https://automationexercise.com/api
+          BASE_URL: https://automationexercise.com
+
+
+      # ==========================================
+      # UPLOAD PLAYWRIGHT REPORT
+      # ==========================================
+
+      - name: Upload Playwright report
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-api-report
           path: playwright-report/
-          retention-days: 30
+          retention-days: 14
