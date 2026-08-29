@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 
+
 export class CheckoutPage {
 
   constructor(page) {
@@ -36,13 +37,13 @@ export class CheckoutPage {
     // REVIEW ORDER PRODUCTS
     // ==================================================
 
-    this.reviewOrderProductRows = page.locator(
-      '#cart_info tbody tr'
-    ).filter({
-      has: page.locator(
-        'a[href*="product_details"]'
-      )
-    });
+    this.reviewOrderProductRows = page
+      .locator('#cart_info tbody tr')
+      .filter({
+        has: page.locator(
+          'a[href*="product_details"]'
+        )
+      });
 
 
     // ==================================================
@@ -119,14 +120,16 @@ export class CheckoutPage {
     // VERIFY CHECKOUT PAGE
     // ------------------------------------------
 
-    await this.reviewOrderHeading.waitFor({
-      state: 'visible',
+    await expect(
+      this.reviewOrderHeading
+    ).toBeVisible({
       timeout: 30000
     });
 
 
-    await this.orderCommentTextarea.waitFor({
-      state: 'visible',
+    await expect(
+      this.orderCommentTextarea
+    ).toBeVisible({
       timeout: 30000
     });
 
@@ -144,8 +147,9 @@ export class CheckoutPage {
     // VERIFY PLACE ORDER BUTTON
     // ------------------------------------------
 
-    await this.placeOrderButton.waitFor({
-      state: 'visible',
+    await expect(
+      this.placeOrderButton
+    ).toBeVisible({
       timeout: 30000
     });
 
@@ -158,20 +162,24 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // WAIT FOR PAYMENT PAGE
-    // ------------------------------------------
-    //
-    // Automation Exercise may keep the URL as
-    // /checkout#google_vignette while the Payment
-    // section becomes available.
-    //
-    // The Payment heading is therefore used as
-    // the synchronization point.
+    // WAIT FOR PAYMENT
     // ------------------------------------------
 
-    await this.paymentPageHeading.waitFor({
-      state: 'visible',
+    await expect(
+      this.paymentPageHeading
+    ).toBeVisible({
       timeout: 45000
+    });
+
+
+    // ------------------------------------------
+    // WAIT FOR PAYMENT FORM
+    // ------------------------------------------
+
+    await expect(
+      this.nameOnCard
+    ).toBeVisible({
+      timeout: 30000
     });
 
   }
@@ -187,8 +195,9 @@ export class CheckoutPage {
     // VERIFY PAYMENT PAGE
     // ------------------------------------------
 
-    await this.paymentPageHeading.waitFor({
-      state: 'visible',
+    await expect(
+      this.paymentPageHeading
+    ).toBeVisible({
       timeout: 30000
     });
 
@@ -197,75 +206,56 @@ export class CheckoutPage {
     // WAIT FOR PAYMENT FORM
     // ------------------------------------------
 
-    await this.nameOnCard.waitFor({
-      state: 'visible',
+    await expect(
+      this.nameOnCard
+    ).toBeVisible({
       timeout: 30000
     });
 
-
-    await this.cardNumber.waitFor({
-      state: 'visible',
+    await expect(
+      this.cardNumber
+    ).toBeVisible({
       timeout: 30000
     });
 
-
-    await this.cvc.waitFor({
-      state: 'visible',
+    await expect(
+      this.cvc
+    ).toBeVisible({
       timeout: 30000
     });
 
-
-    await this.expiryMonth.waitFor({
-      state: 'visible',
+    await expect(
+      this.expiryMonth
+    ).toBeVisible({
       timeout: 30000
     });
 
-
-    await this.expiryYear.waitFor({
-      state: 'visible',
+    await expect(
+      this.expiryYear
+    ).toBeVisible({
       timeout: 30000
     });
 
 
     // ------------------------------------------
-    // FILL NAME
+    // FILL PAYMENT DETAILS
     // ------------------------------------------
 
     await this.nameOnCard.fill(
       payment.name
     );
 
-
-    // ------------------------------------------
-    // FILL CARD NUMBER
-    // ------------------------------------------
-
     await this.cardNumber.fill(
       payment.cardNumber
     );
-
-
-    // ------------------------------------------
-    // FILL CVC
-    // ------------------------------------------
 
     await this.cvc.fill(
       payment.cvc
     );
 
-
-    // ------------------------------------------
-    // FILL EXPIRY MONTH
-    // ------------------------------------------
-
     await this.expiryMonth.fill(
       payment.month
     );
-
-
-    // ------------------------------------------
-    // FILL EXPIRY YEAR
-    // ------------------------------------------
 
     await this.expiryYear.fill(
       payment.year
@@ -285,7 +275,6 @@ export class CheckoutPage {
       }
     );
 
-
     await expect(
       this.cardNumber
     ).toHaveValue(
@@ -294,7 +283,6 @@ export class CheckoutPage {
         timeout: 10000
       }
     );
-
 
     await expect(
       this.cvc
@@ -305,7 +293,6 @@ export class CheckoutPage {
       }
     );
 
-
     await expect(
       this.expiryMonth
     ).toHaveValue(
@@ -314,7 +301,6 @@ export class CheckoutPage {
         timeout: 10000
       }
     );
-
 
     await expect(
       this.expiryYear
@@ -330,8 +316,9 @@ export class CheckoutPage {
     // VERIFY PAY BUTTON
     // ------------------------------------------
 
-    await this.payButton.waitFor({
-      state: 'visible',
+    await expect(
+      this.payButton
+    ).toBeVisible({
       timeout: 15000
     });
 
@@ -347,8 +334,9 @@ export class CheckoutPage {
     // WAIT FOR ORDER COMPLETION
     // ------------------------------------------
 
-    await this.successMessage.waitFor({
-      state: 'visible',
+    await expect(
+      this.successMessage
+    ).toBeVisible({
       timeout: 45000
     });
 
@@ -357,8 +345,9 @@ export class CheckoutPage {
     // VERIFY CONFIRMATION TEXT
     // ------------------------------------------
 
-    await this.successText.waitFor({
-      state: 'visible',
+    await expect(
+      this.successText
+    ).toBeVisible({
       timeout: 15000
     });
 
