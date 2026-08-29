@@ -177,8 +177,8 @@ jobs:
         with:
           name: authentication-diagnostics
           path: |
-            auth-failure.png
-            auth-failure.html
+            auth-failure-attempt-*.png
+            auth-failure-attempt-*.html
             storageState.json
           if-no-files-found: ignore
           retention-days: 7
