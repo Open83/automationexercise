@@ -32,7 +32,9 @@ test.describe('Checkout', () => {
     });
 
     await expect(
-      page.locator('text=Logged in as')
+      page.getByText('Logged in as', {
+        exact: false
+      })
     ).toBeVisible({
       timeout: 10000
     });
@@ -136,6 +138,7 @@ test.describe('Checkout', () => {
 
       const productsPage = new ProductsPage(page);
       const cartPage = new CartPage(page);
+      const checkoutPage = new CheckoutPage(page);
 
 
       // ------------------------------------------
@@ -167,6 +170,25 @@ test.describe('Checkout', () => {
 
 
       // ------------------------------------------
+      // VERIFY CART PRODUCT
+      // ------------------------------------------
+
+      const cartProductRows = page
+        .locator('#cart_info_table tbody tr')
+        .filter({
+          has: page.locator(
+            'a[href*="product_details"]'
+          )
+        });
+
+      await expect(
+        cartProductRows
+      ).toHaveCount(1, {
+        timeout: 15000
+      });
+
+
+      // ------------------------------------------
       // PROCEED TO CHECKOUT
       // ------------------------------------------
 
@@ -174,25 +196,25 @@ test.describe('Checkout', () => {
 
 
       // ------------------------------------------
-      // FIND PRODUCT ROWS
+      // VERIFY CHECKOUT REVIEW SECTION
       // ------------------------------------------
 
-      const productRows = page
-        .locator('table tbody tr')
-        .filter({
-          has: page.locator(
-            'a[href*="product_details"]'
-          )
-        });
+      await expect(
+        checkoutPage.reviewOrderHeading
+      ).toBeVisible({
+        timeout: 15000
+      });
 
 
       // ------------------------------------------
-      // VERIFY PRODUCT EXISTS
+      // VERIFY PRODUCT IN REVIEW ORDER
       // ------------------------------------------
 
-      const rowCount = await productRows.count();
-
-      expect(rowCount).toBeGreaterThanOrEqual(1);
+      await expect(
+        checkoutPage.reviewOrderProductRows
+      ).toHaveCount(1, {
+        timeout: 15000
+      });
 
     }
   );

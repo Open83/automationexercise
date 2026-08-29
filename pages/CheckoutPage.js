@@ -1,14 +1,28 @@
+import { expect } from '@playwright/test';
+
 export class CheckoutPage {
+
   constructor(page) {
+
     this.page = page;
+
 
     // ==================================================
     // CHECKOUT PAGE
     // ==================================================
 
+    this.reviewOrderHeading = page.getByRole(
+      'heading',
+      {
+        name: 'Review Your Order'
+      }
+    );
+
+
     this.orderCommentTextarea = page.locator(
       'textarea[name="message"]'
     );
+
 
     this.placeOrderButton = page.getByRole(
       'link',
@@ -16,6 +30,19 @@ export class CheckoutPage {
         name: 'Place Order'
       }
     );
+
+
+    // ==================================================
+    // REVIEW ORDER PRODUCTS
+    // ==================================================
+
+    this.reviewOrderProductRows = page.locator(
+      '#cart_info tbody tr'
+    ).filter({
+      has: page.locator(
+        'a[href*="product_details"]'
+      )
+    });
 
 
     // ==================================================
@@ -29,25 +56,31 @@ export class CheckoutPage {
       }
     );
 
+
     this.nameOnCard = page.locator(
       'input[data-qa="name-on-card"]'
     );
+
 
     this.cardNumber = page.locator(
       'input[data-qa="card-number"]'
     );
 
+
     this.cvc = page.locator(
       'input[data-qa="cvc"]'
     );
+
 
     this.expiryMonth = page.locator(
       'input[data-qa="expiry-month"]'
     );
 
+
     this.expiryYear = page.locator(
       'input[data-qa="expiry-year"]'
     );
+
 
     this.payButton = page.getByRole(
       'button',
@@ -68,9 +101,11 @@ export class CheckoutPage {
       }
     );
 
+
     this.successText = page.getByText(
       'Congratulations! Your order has been confirmed!'
     );
+
   }
 
 
@@ -81,8 +116,14 @@ export class CheckoutPage {
   async addOrderCommentAndPlaceOrder(comment) {
 
     // ------------------------------------------
-    // Verify checkout page
+    // VERIFY CHECKOUT PAGE
     // ------------------------------------------
+
+    await this.reviewOrderHeading.waitFor({
+      state: 'visible',
+      timeout: 30000
+    });
+
 
     await this.orderCommentTextarea.waitFor({
       state: 'visible',
@@ -91,14 +132,16 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Add order comment
+    // ADD ORDER COMMENT
     // ------------------------------------------
 
-    await this.orderCommentTextarea.fill(comment);
+    await this.orderCommentTextarea.fill(
+      comment
+    );
 
 
     // ------------------------------------------
-    // Verify Place Order button
+    // VERIFY PLACE ORDER BUTTON
     // ------------------------------------------
 
     await this.placeOrderButton.waitFor({
@@ -108,14 +151,22 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Click Place Order
+    // CLICK PLACE ORDER
     // ------------------------------------------
 
     await this.placeOrderButton.click();
 
 
     // ------------------------------------------
-    // Wait for payment page
+    // WAIT FOR PAYMENT PAGE
+    // ------------------------------------------
+    //
+    // Automation Exercise may keep the URL as
+    // /checkout#google_vignette while the Payment
+    // section becomes available.
+    //
+    // The Payment heading is therefore used as
+    // the synchronization point.
     // ------------------------------------------
 
     await this.paymentPageHeading.waitFor({
@@ -123,24 +174,6 @@ export class CheckoutPage {
       timeout: 45000
     });
 
-
-    // ------------------------------------------
-    // Verify payment URL when possible
-    // ------------------------------------------
-
-    if (!this.page.url().includes('/payment')) {
-      try {
-        await this.page.waitForURL(
-          '**/payment',
-          {
-            timeout: 15000
-          }
-        );
-      } catch (error) {
-        // Payment heading is the primary verification.
-        // Some navigation timing can make URL waiting unnecessary.
-      }
-    }
   }
 
 
@@ -151,7 +184,7 @@ export class CheckoutPage {
   async fillPaymentDetails(payment) {
 
     // ------------------------------------------
-    // Verify payment page
+    // VERIFY PAYMENT PAGE
     // ------------------------------------------
 
     await this.paymentPageHeading.waitFor({
@@ -161,7 +194,7 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Wait for payment form
+    // WAIT FOR PAYMENT FORM
     // ------------------------------------------
 
     await this.nameOnCard.waitFor({
@@ -169,20 +202,24 @@ export class CheckoutPage {
       timeout: 30000
     });
 
+
     await this.cardNumber.waitFor({
       state: 'visible',
       timeout: 30000
     });
+
 
     await this.cvc.waitFor({
       state: 'visible',
       timeout: 30000
     });
 
+
     await this.expiryMonth.waitFor({
       state: 'visible',
       timeout: 30000
     });
+
 
     await this.expiryYear.waitFor({
       state: 'visible',
@@ -191,7 +228,7 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Fill name
+    // FILL NAME
     // ------------------------------------------
 
     await this.nameOnCard.fill(
@@ -200,7 +237,7 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Fill card number
+    // FILL CARD NUMBER
     // ------------------------------------------
 
     await this.cardNumber.fill(
@@ -209,7 +246,7 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Fill CVC
+    // FILL CVC
     // ------------------------------------------
 
     await this.cvc.fill(
@@ -218,7 +255,7 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Fill expiry month
+    // FILL EXPIRY MONTH
     // ------------------------------------------
 
     await this.expiryMonth.fill(
@@ -227,7 +264,7 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Fill expiry year
+    // FILL EXPIRY YEAR
     // ------------------------------------------
 
     await this.expiryYear.fill(
@@ -236,50 +273,61 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Verify payment values
+    // VERIFY PAYMENT VALUES
     // ------------------------------------------
 
-    await this.page.waitForFunction(() => {
+    await expect(
+      this.nameOnCard
+    ).toHaveValue(
+      payment.name,
+      {
+        timeout: 10000
+      }
+    );
 
-      const name = document.querySelector(
-        'input[data-qa="name-on-card"]'
-      );
 
-      const card = document.querySelector(
-        'input[data-qa="card-number"]'
-      );
+    await expect(
+      this.cardNumber
+    ).toHaveValue(
+      payment.cardNumber,
+      {
+        timeout: 10000
+      }
+    );
 
-      const cvc = document.querySelector(
-        'input[data-qa="cvc"]'
-      );
 
-      const month = document.querySelector(
-        'input[data-qa="expiry-month"]'
-      );
+    await expect(
+      this.cvc
+    ).toHaveValue(
+      payment.cvc,
+      {
+        timeout: 10000
+      }
+    );
 
-      const year = document.querySelector(
-        'input[data-qa="expiry-year"]'
-      );
 
-      return (
-        name &&
-        card &&
-        cvc &&
-        month &&
-        year &&
-        name.value.length > 0 &&
-        card.value.length > 0 &&
-        cvc.value.length > 0 &&
-        month.value.length > 0 &&
-        year.value.length > 0
-      );
-    }, null, {
-      timeout: 10000
-    });
+    await expect(
+      this.expiryMonth
+    ).toHaveValue(
+      payment.month,
+      {
+        timeout: 10000
+      }
+    );
+
+
+    await expect(
+      this.expiryYear
+    ).toHaveValue(
+      payment.year,
+      {
+        timeout: 10000
+      }
+    );
 
 
     // ------------------------------------------
-    // Verify Pay button
+    // VERIFY PAY BUTTON
     // ------------------------------------------
 
     await this.payButton.waitFor({
@@ -289,14 +337,14 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Pay and confirm order
+    // PAY AND CONFIRM ORDER
     // ------------------------------------------
 
     await this.payButton.click();
 
 
     // ------------------------------------------
-    // Wait for order completion
+    // WAIT FOR ORDER COMPLETION
     // ------------------------------------------
 
     await this.successMessage.waitFor({
@@ -306,12 +354,14 @@ export class CheckoutPage {
 
 
     // ------------------------------------------
-    // Verify confirmation text
+    // VERIFY CONFIRMATION TEXT
     // ------------------------------------------
 
     await this.successText.waitFor({
       state: 'visible',
       timeout: 15000
     });
+
   }
+
 }

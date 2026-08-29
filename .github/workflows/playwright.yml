@@ -89,6 +89,7 @@ jobs:
         with:
           name: playwright-api-report
           path: playwright-report/
+          if-no-files-found: ignore
           retention-days: 14
 
 
@@ -142,6 +143,29 @@ jobs:
 
 
       # ------------------------------------------
+      # VERIFY ENVIRONMENT
+      # ------------------------------------------
+
+      - name: Verify authentication configuration
+        shell: bash
+        run: |
+          if [ -z "$EXISTING_TEST_EMAIL" ]; then
+            echo "::error::EXISTING_TEST_EMAIL is not configured."
+            exit 1
+          fi
+
+          if [ -z "$EXISTING_TEST_PASSWORD" ]; then
+            echo "::error::EXISTING_TEST_PASSWORD is not configured."
+            exit 1
+          fi
+
+          echo "Authentication credentials are configured."
+        env:
+          EXISTING_TEST_EMAIL: ${{ secrets.USERNAME }}
+          EXISTING_TEST_PASSWORD: ${{ secrets.PASSWORD }}
+
+
+      # ------------------------------------------
       # UI TESTS
       # ------------------------------------------
 
@@ -164,6 +188,7 @@ jobs:
         with:
           name: playwright-ui-report
           path: playwright-report/
+          if-no-files-found: ignore
           retention-days: 14
 
 
@@ -172,11 +197,12 @@ jobs:
       # ------------------------------------------
 
       - name: Upload authentication diagnostics
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: authentication-diagnostics
           path: |
+            auth-diagnostics/
             auth-failure-attempt-*.png
             auth-failure-attempt-*.html
             storageState.json
